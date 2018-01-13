@@ -1,0 +1,29 @@
+---
+
+# PostgreSQL config
+postgresql_version: 9.6
+postgresql_databases:
+  - name: "{{ lookup('env','POSTGRESQL_DATABASE') }}"
+    owner: "{{ lookup('env','POSTGRESQL_USERNAME') }}"
+postgresql_users:
+  - name: "{{ lookup('env','POSTGRESQL_USERNAME') }}"
+    pass: "{{ lookup('env','POSTGRESQL_PASSWORD') }}"
+  - name: test
+    pass: test
+postgresql_user_privileges:
+  - name: "{{ lookup('env','POSTGRESQL_USERNAME') }}"
+    db: "{{ lookup('env','POSTGRESQL_DATABASE') }}"
+  - name: test
+    role_attr_flags: CREATEDB
+
+# TODO This MUST be fixed, it's a local-only tolerable fix
+postgresql_listen_addresses: "*"
+postgresql_pg_hba_default:
+  # Default values as in https://github.com/ANXS/postgresql/blob/0ed39ed89b380edafba18e585c9ad116b6f90b09/defaults/main.yml#L46
+  - { type: local, database: all, user: '{{ postgresql_admin_user }}', address: '', method: '{{ postgresql_default_auth_method }}', comment: '' }
+  - { type: local, database: all, user: all, address: '',             method: '{{ postgresql_default_auth_method }}', comment: '"local" is for Unix domain socket connections only' }
+  - { type: host,  database: all, user: all, address: '127.0.0.1/32', method: '{{ postgresql_default_auth_method }}', comment: 'IPv4 local connections:' }
+  - { type: host,  database: all, user: all, address: '::1/128',      method: '{{ postgresql_default_auth_method }}', comment: 'IPv6 local connections:' }
+  # TODO This MUST be fixed, it's a local-only tolerable fix
+  - { type: host,  database: all, user: all, address: '0.0.0.0/0',    method: 'md5', comment: 'ANYONE WITH A PASSWORD' }
+
